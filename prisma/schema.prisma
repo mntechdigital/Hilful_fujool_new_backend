@@ -153,6 +153,8 @@ model HeroSection {
   title       String  @db.Text
   description String? @db.Text
   youtubeUrl  String
+  packageTile String?
+  serviceTile String?
 
   images    HeroImages[]
   createdAt DateTime     @default(now())
