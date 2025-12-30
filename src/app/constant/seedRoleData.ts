@@ -9,7 +9,7 @@ export const seedRoleAdminData: TAdminRole = {
     { name: 'Five Pillar', path: 'fivePillarsOfIslam', index: 4 },
     { name: 'Contacts', path: 'contacts', index: 5 },
     { name: 'Services', path: 'services', index: 6 },
-    { name: 'Update Profile', path: 'profile', index: 7 },
+    { name: 'Update Profile', path: 'update-profile', index: 7 },
     { name: 'Page Settings', path: 'page-setting', index: 8 },
     // Page Settings sub-routes
     { name: 'Hero Area', path: 'page-setting/hero-area', index: 8.1 },
@@ -28,7 +28,7 @@ export const featureNames = {
   fivePillarsOfIslam: 'fivePillarsOfIslam',
   contacts: 'contacts',
   services: 'services',
-  profile: 'profile',
+  profile: 'update-profile',
   settings: 'page-setting',
   settingsHeroArea: 'page-setting/hero-area',
   settingsAboutUs: 'page-setting/about-us',
