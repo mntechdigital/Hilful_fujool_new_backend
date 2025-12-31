@@ -8,6 +8,8 @@ const create = async (payload: any) => {
       subtitle: payload.subtitle,
       title: payload.title,
       youtubeUrl: payload.youtubeUrl,
+      packageTitle: payload.packageTitle,
+      serviceTitle: payload.serviceTitle,
       images: {
         create: payload.images || [], // [{ image: "url" }]
       },
@@ -42,6 +44,8 @@ const update = async (
   if (payload.title) updateData.title = payload.title;
   if (payload.description) updateData.description = payload.description;
   if (payload.youtubeUrl) updateData.youtubeUrl = payload.youtubeUrl;
+  if (payload.packageTitle) updateData.packageTitle = payload.packageTitle;
+  if (payload.serviceTitle) updateData.serviceTitle = payload.serviceTitle;
 
   // Get current HeroSection to manage images
   const currentHero = await prisma.heroSection.findUnique({
