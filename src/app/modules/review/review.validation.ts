@@ -18,10 +18,13 @@ export const updateReviewSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     designation: z.string().optional(),
-    rating: z.string().refine((val) => {
-      const num = Number(val);
-      return Number.isInteger(num) && num >= 1 && num <= 5;
-    }).optional(),
+    rating: z
+      .string()
+      .refine((val) => {
+        const num = Number(val);
+        return Number.isInteger(num) && num >= 1 && num <= 5;
+      })
+      .optional(),
     description: z.string().optional(),
     image: z.string().optional(),
     status: z.string().optional(),

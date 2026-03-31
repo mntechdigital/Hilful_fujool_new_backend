@@ -2,17 +2,21 @@
 
 import prisma from '../../../db/db.config';
 import { builderQuery } from '../../builders/prismaBuilderQuery';
-import { deleteImageFile } from '../../utils/deleteFile';
 
 const create = async (payload: any) => {
-    if (!payload.image) {
-        throw new Error('Image is required');
+    let status = payload.status;
+    if (typeof status === 'string') {
+        status = status === 'true' || status === '1';
+    } else if (typeof status !== 'boolean') {
+        status = undefined;
     }
+    const { thumbnail, ...rest } = payload;
     return prisma.review.create({
         data: {
-            ...payload,
-            rating: Number(payload.rating),
-            status: payload.status !== undefined ? Boolean(payload.status) : undefined,
+            ...rest,
+            image: thumbnail || payload.image,
+            rating: payload.rating ? Number(payload.rating) : undefined,
+            status: status,
             id: payload.id ? String(payload.id) : undefined,
         },
     });
@@ -51,31 +55,26 @@ const getById = async (id: string) => {
 };
 
 const update = async (id: string, payload: any) => {
-    if (!payload.image) {
-        throw new Error('Image is required');
+    const existing = await prisma.review.findUnique({ where: { id } });
+    if (!existing) {
+        throw new Error('Review item not found');
     }
-    const existing = await prisma.review.findUniqueOrThrow({ where: { id } });
-    const updated = await prisma.review.update({
+    const { thumbnail, ...rest } = payload;
+    const imageValue = thumbnail !== undefined ? thumbnail : (payload.image !== undefined ? payload.image : existing.image);
+    const data = {
+        ...rest,
+        image: imageValue,
+        rating: payload.rating ? Number(payload.rating) : undefined,
+        status: payload.status !== undefined ? Boolean(payload.status) : undefined,
+    };
+    return prisma.review.update({
         where: { id },
-        data: {
-            ...payload,
-            rating: Number(payload.rating),
-            status: payload.status !== undefined ? Boolean(payload.status) : undefined,
-        },
+        data,
     });
-    if (payload.image && existing.image && existing.image !== payload.image) {
-        deleteImageFile(existing.image);
-    }
-    return updated;
 };
 
 const deleteReview = async (id: string) => {
-    const existing = await prisma.review.findUniqueOrThrow({ where: { id } });
-    const deleted = await prisma.review.delete({ where: { id } });
-    if (existing.image) {
-        deleteImageFile(existing.image);
-    }
-    return deleted;
+    return prisma.review.delete({ where: { id } });
 };
 
 const updateStatus = async (id: string, status: boolean) => {
