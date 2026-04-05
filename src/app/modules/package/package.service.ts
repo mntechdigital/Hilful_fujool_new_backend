@@ -1,22 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '../../../db/db.config';
 import { builderQuery } from '../../builders/prismaBuilderQuery';
-import { deleteImageFile } from '../../utils/deleteFile';
 
 const create = async (payload: any) => {
+    let status = payload.status;
+    if (typeof status === 'string') {
+        status = status === 'true' || status === '1';
+    } else if (typeof status !== 'boolean') {
+        status = true;
+    }
+
+    const { images, packageImages, ...rest } = payload;
+    
+    let parsedImages = images || packageImages || [];
+    if (typeof parsedImages === 'string') {
+        try { parsedImages = JSON.parse(parsedImages); } catch { parsedImages = [parsedImages]; }
+    }
+
     return prisma.package.create({
         data: {
-            title: payload.title,
-            travellPlace: payload.travellPlace,
-            country: payload.country,
-            maxTravelers: payload.maxTravelers,
-            minPax: payload.minPax,
-            duration: payload.duration,
-            description: payload.description,
-            status: payload.status !== undefined ? Boolean(payload.status) : true,
-            packageImages: {
-                create: payload.packageImages  // Controller already sends [{ image: "url" }]
-            }
+            ...rest,
+            status: status,
+            id: payload.id ? String(payload.id) : undefined,
+            packageImages: parsedImages.length > 0 ? {
+                create: parsedImages.map((img: any) => 
+                    typeof img === 'string' ? { image: img } : { image: img.image || '' }
+                )
+            } : undefined
         },
         include: { packageImages: true },
     });
@@ -57,82 +67,44 @@ const getById = async (id: string) => {
     return prisma.package.findUnique({ where: { id }, include: { packageImages: true } });
 };
 
-const update = async (
-    id: string, 
-    payload: any, 
-    existingImageUrls: string[] = [], 
-    newImageUrls: string[] = []
-) => {
-    // Prepare update data for package
-    const updateData: any = {};
-    
-    if (payload.title) updateData.title = payload.title;
-    if (payload.travellPlace) updateData.travellPlace = payload.travellPlace;
-    if (payload.country) updateData.country = payload.country;
-    if (payload.maxTravelers) updateData.maxTravelers = payload.maxTravelers;
-    if (payload.minPax) updateData.minPax = payload.minPax;
-    if (payload.duration) updateData.duration = payload.duration;
-    if (payload.description) updateData.description = payload.description;
-    if (payload.status !== undefined) updateData.status = Boolean(payload.status);
-
-    // Get current package to manage images
-    const currentPackage = await prisma.package.findUnique({
-        where: { id },
-        include: { packageImages: true }
-    });
-
-    if (!currentPackage) {
+const update = async (id: string, payload: any) => {
+    const existing = await prisma.package.findUnique({ where: { id }, include: { packageImages: true } });
+    if (!existing) {
         throw new Error('Package not found');
     }
 
-    // Find images to delete (images that were in DB but not in existingImageUrls)
-    const imagesToDelete = currentPackage.packageImages.filter(
-        (img) => !existingImageUrls.includes(img.image)
-    );
+    const { images, packageImages, status, ...rest } = payload;
+    delete rest.id;
 
-    // Delete removed images from database and filesystem
-    for (const img of imagesToDelete) {
-        await prisma.packageImage.delete({
-            where: { id: img.id }
-        });
-        deleteImageFile(img.image);
+    const imagesValue = images !== undefined ? images : (packageImages !== undefined ? packageImages : existing.packageImages);
+
+    let parsedImages = imagesValue;
+    if (typeof parsedImages === 'string') {
+        try { parsedImages = JSON.parse(parsedImages); } catch { parsedImages = [parsedImages]; }
     }
 
-    // Add new images to database
-    for (const imageUrl of newImageUrls) {
-        await prisma.packageImage.create({
-            data: {
-                image: imageUrl,
-                packageId: id
-            }
-        });
+    const data: any = {
+        ...rest,
+        status: status !== undefined ? Boolean(status) : undefined,
+    };
+
+    if (images !== undefined || packageImages !== undefined) {
+        data.packageImages = {
+            deleteMany: {},
+            create: Array.isArray(parsedImages) ? parsedImages.map((img: any) =>
+                typeof img === 'string' ? { image: img } : { image: img.image || '' }
+            ) : []
+        };
     }
 
-    // Update package details
     return prisma.package.update({
         where: { id },
-        data: updateData,
+        data,
         include: { packageImages: true },
     });
 };
 
 const deletePackage = async (id: string) => {
-    // First get the package with images
-    const packageData = await prisma.package.findUnique({
-        where: { id },
-        include: { packageImages: true }
-    });
-
-    if (!packageData) {
-        throw new Error('Package not found');
-    }
-
-    // Delete image files from storage
-    for (const img of packageData.packageImages) {
-        deleteImageFile(img.image);
-    }
-
-    // Delete the package (cascade will handle packageImages)
     return prisma.package.delete({ where: { id } });
 };
 
@@ -159,23 +131,10 @@ const packageImageCreate = async (payload: { image: string | null; packageId?: s
 };
 
 const deletePackageImage = async (imageId: string) => {
-    const existingImage = await prisma.packageImage.findUnique({
+    return prisma.packageImage.delete({
         where: { id: imageId },
     });
-
-    if (!existingImage) {
-        throw new Error('Image not found');
-    }
-
-    const response = await prisma.packageImage.delete({
-        where: { id: imageId },
-    });
-
-    deleteImageFile(existingImage.image);
-
-    return response;
 };
-
 
 const updateStatus = async (id: string, status: boolean) => {
   return prisma.package.update({
