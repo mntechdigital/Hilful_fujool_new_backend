@@ -1,87 +1,86 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '../../../db/db.config';
-import { builderQuery } from '../../builders/prismaBuilderQuery';
 
 const create = async (payload: any) => {
-  if (!payload.image) {
-    throw new Error('Image is required');
+  const { image, images, ...rest } = payload;
+  delete rest.id; // Removed id from rest so it doesn't try to insert it with Prisma directly below
+
+  // Parse images if frontend sends "images" (matching hero-area parser)
+  let parsedImage = image;
+  if (!parsedImage && images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.image || '';
+    }
   }
-  // Check if a ContactUs record already exists
+
   const existing = await prisma.contactUs.findFirst();
   if (existing) {
     // If exists, update the existing record
     return prisma.contactUs.update({
       where: { id: existing.id },
       data: {
-        ...payload,
-        image: payload.image || existing.image,
+        ...rest,
+        image: parsedImage !== undefined ? parsedImage : existing.image,
       },
     });
   }
+
   // If not exists, create new
   return prisma.contactUs.create({
     data: {
-      ...payload,
+      ...rest,
       id: payload.id ? String(payload.id) : undefined,
+      image: parsedImage,
     },
   });
 };
 
-const getAll = async (query: Record<string, any>) => {
-  const contactUsQuery = builderQuery({
-    searchFields: [
-      'subTitle',
-      'title',
-      'companyNumber',
-      'companyEmail',
-      'companyLocation',
-      'facebookUrl',
-      'instagramUrl',
-      'youtubeUrl',
-      'image',
-    ],
-    searchTerm: query.searchTerm,
-    filter: query.filter ? JSON.parse(query.filter) : {},
-    orderBy: query.orderBy ? JSON.parse(query.orderBy) : { createdAt: 'desc' },
-    page: query.page ? Number(query.page) : 1,
-    limit: query.limit ? Number(query.limit) : 10,
+const getAll = async () => {
+  return prisma.contactUs.findMany({
+    orderBy: { createdAt: 'desc' },
   });
-
-  const totalItems = await prisma.contactUs.count({ where: contactUsQuery.where });
-  const currentPage = Number(query.page) || 1;
-  const totalPages = Math.ceil(totalItems / contactUsQuery.take);
-
-  const data = await prisma.contactUs.findMany({
-    ...contactUsQuery,
-  });
-
-  return {
-    meta: {
-      totalItems,
-      totalPages,
-      currentPage,
-    },
-    data,
-  };
 };
 
 const getById = async (id: string) => {
-  return prisma.contactUs.findUniqueOrThrow({ where: { id } });
+  return prisma.contactUs.findUniqueOrThrow({
+    where: { id },
+  });
 };
 
 const update = async (id: string, payload: any) => {
-  const existing = await prisma.contactUs.findUniqueOrThrow({ where: { id } });
-  // If no new image is provided, keep the existing image
-  const image = payload.image || existing.image;
-  if (!image) {
-    throw new Error('Image is required');
+  const currentContactUs = await prisma.contactUs.findUnique({
+    where: { id },
+  });
+
+  if (!currentContactUs) throw new Error('ContactUs not found');
+
+  const { image, images, ...rest } = payload;
+  delete rest.id;
+
+  let parsedImage = image !== undefined ? image : currentContactUs.image;
+
+  if (images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.image || '';
+    }
   }
+
+  const updateData: any = { ...rest };
+  updateData.image = parsedImage;
+
   return prisma.contactUs.update({
     where: { id },
-    data: {
-      ...payload,
-      image,
-    },
+    data: updateData,
   });
 };
 
