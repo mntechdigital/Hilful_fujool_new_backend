@@ -3,19 +3,19 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { HeroAreaService } from './hero-area.service';
 import { getMultipleImageUrls } from '../../utils/getImageUrl';
-import AppError from '../../errors/AppError';
 
 const createHeroSection = catchAsync(async (req, res) => {
-  const files = req.files;
-  if (!files) {
-    throw new AppError(404, 'Please upload images');
+  let images = req.body.images;
+  if (req.files) {
+    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    if (imageFiles.length > 0) {
+      images = getMultipleImageUrls(req, imageFiles);
+    }
   }
-  const imageFiles = Array.isArray(files) ? files : Object.values(files).flat();
-  const imageUrls = getMultipleImageUrls(req, imageFiles);
-  const heroImages = imageUrls.map((image) => ({ image }));
+
   const response = await HeroAreaService.create({
     ...req.body,
-    images: heroImages,
+    images: images,
   });
   sendResponse(res, {
     statusCode: 201,
@@ -46,37 +46,17 @@ const getHeroSectionById = catchAsync(async (req, res) => {
 });
 
 const updateHeroSection = catchAsync(async (req, res) => {
-  const files = req.files;
-  const existingImages = req.body.existingImages;
-  const heroData = req.body.data ? JSON.parse(req.body.data) : req.body;
-
-  // Handle new image uploads
-  let newImageUrls: string[] | undefined = [];
-  if (Array.isArray(files) && files.length > 0) {
-    const imageFiles = files;
-    newImageUrls = getMultipleImageUrls(req, imageFiles);
-  } else if (files && !Array.isArray(files)) {
-    const imageFiles = Object.values(files).flat();
+  let images = req.body.images;
+  if (req.files) {
+    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
     if (imageFiles.length > 0) {
-      newImageUrls = getMultipleImageUrls(req, imageFiles);
+      images = getMultipleImageUrls(req, imageFiles);
     }
   }
 
-  // Parse existing images if sent as JSON string
-  let existingImageUrls = [];
-  if (existingImages) {
-    existingImageUrls = typeof existingImages === 'string'
-      ? JSON.parse(existingImages)
-      : Array.isArray(existingImages)
-      ? existingImages
-      : [existingImages];
-  }
-
   const response = await HeroAreaService.update(
-    heroData.id,
-    heroData,
-    existingImageUrls,
-    newImageUrls
+    req.params.id,
+    { ...req.body, images }
   );
 
   sendResponse(res, {

@@ -2,17 +2,24 @@
 import prisma from '../../../db/db.config';
 
 const create = async (payload: any) => {
-  // Create HeroSection with images
+  const { images, ...rest } = payload;
+  
+  let parsedImages = images || [];
+  if (typeof parsedImages === 'string') {
+    try { parsedImages = JSON.parse(parsedImages); } catch { parsedImages = [parsedImages]; }
+  }
+
+  // Upsert or Create HeroSection with images
+  // (In your logic it looks like an ordinary create, but hero often is upserted if one already exists - keeping as create to match existing method)
   return prisma.heroSection.create({
     data: {
-      subtitle: payload.subtitle,
-      title: payload.title,
-      youtubeUrl: payload.youtubeUrl,
-      packageTitle: payload.packageTitle,
-      serviceTitle: payload.serviceTitle,
-      images: {
-        create: payload.images || [], // [{ image: "url" }]
-      },
+      ...rest,
+      id: payload.id ? String(payload.id) : undefined,
+      images: parsedImages.length > 0 ? {
+        create: parsedImages.map((img: any) =>
+          typeof img === 'string' ? { image: img } : { image: img.image || '' }
+        ),
+      } : undefined,
     },
     include: { images: true },
   });
@@ -32,45 +39,31 @@ const getById = async (id: string) => {
   });
 };
 
-const update = async (
-  id: string,
-  payload: any,
-  existingImageUrls: string[] = [],
-  newImageUrls: string[] = []
-) => {
-  // Prepare update data for HeroSection
-  const updateData: any = {};
-  if (payload.subtitle) updateData.subtitle = payload.subtitle;
-  if (payload.title) updateData.title = payload.title;
-  if (payload.description) updateData.description = payload.description;
-  if (payload.youtubeUrl) updateData.youtubeUrl = payload.youtubeUrl;
-  if (payload.packageTitle) updateData.packageTitle = payload.packageTitle;
-  if (payload.serviceTitle) updateData.serviceTitle = payload.serviceTitle;
-
-  // Get current HeroSection to manage images
+const update = async (id: string, payload: any) => {
   const currentHero = await prisma.heroSection.findUnique({
     where: { id },
     include: { images: true },
   });
+  
   if (!currentHero) throw new Error('HeroSection not found');
 
-  // Find images to delete (images that were in DB but not in existingImageUrls)
-  const imagesToDelete = currentHero.images.filter(
-    (img) => !existingImageUrls.includes(img.image)
-  );
-  for (const img of imagesToDelete) {
-    await prisma.heroImages.delete({ where: { id: img.id } });
-    // Optionally delete image file from storage if needed
+  const { images, ...rest } = payload;
+  delete rest.id;
+
+  let parsedImages = images !== undefined ? images : currentHero.images;
+  if (typeof parsedImages === 'string') {
+    try { parsedImages = JSON.parse(parsedImages); } catch { parsedImages = [parsedImages]; }
   }
 
-  // Add new images to database
-  for (const imageUrl of newImageUrls) {
-    await prisma.heroImages.create({
-      data: {
-        image: imageUrl,
-        heroSectionId: id,
-      },
-    });
+  const updateData: any = { ...rest };
+
+  if (images !== undefined) {
+    updateData.images = {
+      deleteMany: {},
+      create: Array.isArray(parsedImages) ? parsedImages.map((img: any) =>
+        typeof img === 'string' ? { image: img } : { image: img.image || '' }
+      ) : []
+    };
   }
 
   // Update HeroSection details
