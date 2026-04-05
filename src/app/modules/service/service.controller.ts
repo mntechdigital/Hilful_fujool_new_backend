@@ -1,17 +1,15 @@
 import catchAsync from '../../utils/catchAsync';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { ServiceService } from './service.service';
 
 const createService = catchAsync(async (req, res) => {
-  const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-  const response = await ServiceService.create({ ...req.body, image });
-  sendResponse(res, {
-    statusCode: 201,
-    success: true,
-    message: 'Service created successfully',
-    data: response,
-  });
+	const response = await ServiceService.create(req.body);
+	sendResponse(res, {
+		statusCode: 201,
+		success: true,
+		message: 'Service created successfully',
+		data: response,
+	});
 });
 
 const getAllServices = catchAsync(async (req, res) => {
@@ -35,14 +33,13 @@ const getServiceById = catchAsync(async (req, res) => {
 });
 
 const updateService = catchAsync(async (req, res) => {
-	const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-  const response = await ServiceService.update(req.params.id, { ...req.body, image });
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Service updated successfully',
-    data: response,
-  });
+	const response = await ServiceService.update(req.params.id, req.body);
+	sendResponse(res, {
+		statusCode: 200,
+		success: true,
+		message: 'Service updated successfully',
+		data: response,
+	});
 });
 
 const deleteService = catchAsync(async (req, res) => {
