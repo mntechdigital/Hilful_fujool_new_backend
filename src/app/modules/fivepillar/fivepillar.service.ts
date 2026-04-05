@@ -1,17 +1,20 @@
 import prisma from '../../../db/db.config';
-import { deleteImageFile } from '../../utils/deleteFile';
 import { builderQuery } from '../../builders/prismaBuilderQuery';
 
 const create = async (payload: any) => {
-  if (!payload.image) {
-    throw new Error('Image is required');
+  let status = payload.status;
+  if (typeof status === 'string') {
+    status = status === 'true' || status === '1';
+  } else if (typeof status !== 'boolean') {
+    status = undefined;
   }
+  const { thumbnail, ...rest } = payload;
   return prisma.fivePillar.create({
     data: {
-      ...payload,
-      order: Number(payload.order),
-      status:
-        payload.status !== undefined ? Boolean(payload.status) : undefined,
+      ...rest,
+      image: thumbnail || payload.image,
+      order: payload.order ? Number(payload.order) : undefined,
+      status: status,
       id: payload.id ? String(payload.id) : undefined,
     },
   });
@@ -48,40 +51,30 @@ const getAll = async (query: Record<string, any>) => {
 };
 
 const getById = async (id: string) => {
-  return prisma.fivePillar.findUniqueOrThrow({ where: { id } });
+  return prisma.fivePillar.findUnique({ where: { id } });
 };
 
 const update = async (id: string, payload: any) => {
-  if (!payload.image) {
-    throw new Error('Image is required');
+  const existing = await prisma.fivePillar.findUnique({ where: { id } });
+  if (!existing) {
+    throw new Error('Five Pillar item not found');
   }
-  const existing = await prisma.fivePillar.findUniqueOrThrow({
+  const { thumbnail, ...rest } = payload;
+  const imageValue = thumbnail !== undefined ? thumbnail : (payload.image !== undefined ? payload.image : existing.image);
+  const data = {
+    ...rest,
+    image: imageValue,
+    order: payload.order !== undefined ? Number(payload.order) : undefined,
+    status: payload.status !== undefined ? Boolean(payload.status) : undefined,
+  };
+  return prisma.fivePillar.update({
     where: { id },
+    data,
   });
-  const updated = await prisma.fivePillar.update({
-    where: { id },
-    data: {
-      ...payload,
-      order: payload.order !== undefined ? Number(payload.order) : undefined,
-      status:
-        payload.status !== undefined ? Boolean(payload.status) : undefined,
-    },
-  });
-  if (payload.image && existing.image && existing.image !== payload.image) {
-    deleteImageFile(existing.image);
-  }
-  return updated;
 };
 
 const deletePillar = async (id: string) => {
-  const existing = await prisma.fivePillar.findUniqueOrThrow({
-    where: { id },
-  });
-  const deleted = await prisma.fivePillar.delete({ where: { id } });
-  if (existing.image) {
-    deleteImageFile(existing.image);
-  }
-  return deleted;
+  return prisma.fivePillar.delete({ where: { id } });
 };
 
 const updateStatus = async (id: string, status: boolean) => {
