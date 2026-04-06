@@ -1,44 +1,30 @@
 import { Router } from 'express';
 import { featureNames } from '../../constant/seedRoleData';
 import auth from '../../middlewares/authorization';
-import { imageUpload, uploadImages } from '../../middlewares/multer';
-import validation from '../../middlewares/validation';
 import { AboutUsController } from './about-us.controller';
-import { AboutUsValidation } from './about-us.validation';
 
 const router = Router();
 
 router.post(
   '/',
   auth([featureNames.settings]),
-  imageUpload.array('images', 10),
-  uploadImages,
-  validation(AboutUsValidation.createAboutUsValidation),
-  AboutUsController.crateAboutSection,
+  AboutUsController.createAboutSection
 );
 
-router.get('/', AboutUsController.getAboutSection);
+router.get('/', AboutUsController.getAllAboutSections);
+
+router.get('/:id', AboutUsController.getAboutSectionById);
 
 router.put(
   '/:id',
   auth([featureNames.settings]),
-  imageUpload.array('images', 10),
-  uploadImages,
-  AboutUsController.updateAboutSection,
-);
-
-router.post(
-  '/image',
-  auth([featureNames.settings]),
-  imageUpload.single('image'),
-  uploadImages,
-  AboutUsController.addAboutSectionImage,
+  AboutUsController.updateAboutSection
 );
 
 router.delete(
-  '/image/:id',
+  '/:id',
   auth([featureNames.settings]),
-  AboutUsController.deleteAboutSectionImage,
+  AboutUsController.deleteAboutSection
 );
 
 export const AboutUsRoutes = router;

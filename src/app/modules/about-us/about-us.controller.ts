@@ -1,23 +1,20 @@
-import AppError from '../../errors/AppError';
 import catchAsync from '../../utils/catchAsync';
-import {
-  getMultipleImageUrls,
-  getSingleImageUrl,
-} from '../../utils/getImageUrl';
+import { getMultipleImageUrls } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { AboutUsService } from './about-us.service';
 
-const crateAboutSection = catchAsync(async (req, res) => {
-  const files = req.files;
-  if (!files) {
-    throw new AppError(404, 'Please upload images');
+const createAboutSection = catchAsync(async (req, res) => {
+  let images = req.body.images;
+  if (req.files) {
+    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    if (imageFiles.length > 0) {
+      images = getMultipleImageUrls(req, imageFiles);
+    }
   }
-  const imageFiles = Array.isArray(files) ? files : Object.values(files).flat();
-  const imageUrls = getMultipleImageUrls(req, imageFiles);
-  const aboutUsImages = imageUrls.map((image) => ({ image }));
-  const response = await AboutUsService.createAboutUsIntoDB({
+
+  const response = await AboutUsService.create({
     ...req.body,
-    aboutUsImages,
+    images: images,
   });
   sendResponse(res, {
     statusCode: 201,
@@ -27,8 +24,19 @@ const crateAboutSection = catchAsync(async (req, res) => {
   });
 });
 
-const getAboutSection = catchAsync(async (req, res) => {
-  const response = await AboutUsService.getAboutUsFromDB();
+const getAllAboutSections = catchAsync(async (req, res) => {
+  const response = await AboutUsService.getAll();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'About Us section retrieved successfully',
+    data: response,
+  });
+});
+
+const getAboutSectionById = catchAsync(async (req, res) => {
+  const response = await AboutUsService.getById(req.params.id);
 
   sendResponse(res, {
     statusCode: 200,
@@ -39,39 +47,17 @@ const getAboutSection = catchAsync(async (req, res) => {
 });
 
 const updateAboutSection = catchAsync(async (req, res) => {
-  const files = req.files;
-  const existingImages = req.body.existingImages;
-  // Parse data if it's sent as JSON string
-  const aboutUsData = req.body.data ? JSON.parse(req.body.data) : req.body;
-
-  // Handle new image uploads
-  let newImageUrls: string[] | undefined = [];
-  if (Array.isArray(files) && files.length > 0) {
-    const imageFiles = files;
-    newImageUrls = getMultipleImageUrls(req, imageFiles);
-  } else if (files && !Array.isArray(files)) {
-    const imageFiles = Object.values(files).flat();
+  let images = req.body.images;
+  if (req.files) {
+    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
     if (imageFiles.length > 0) {
-      newImageUrls = getMultipleImageUrls(req, imageFiles);
+      images = getMultipleImageUrls(req, imageFiles);
     }
   }
 
-  // Parse existing images if sent as JSON string
-  let existingImageUrls = [];
-  if (existingImages) {
-    existingImageUrls = typeof existingImages === 'string'
-      ? JSON.parse(existingImages)
-      : Array.isArray(existingImages)
-      ? existingImages
-      : [existingImages];
-  }
-
-  // Update AboutUs with images
-  const response = await AboutUsService.updateAboutUs(
-    aboutUsData.id,
-    aboutUsData,
-    existingImageUrls,
-    newImageUrls
+  const response = await AboutUsService.update(
+    req.params.id,
+    { ...req.body, images }
   );
 
   sendResponse(res, {
@@ -82,31 +68,20 @@ const updateAboutSection = catchAsync(async (req, res) => {
   });
 });
 
-const addAboutSectionImage = catchAsync(async (req, res) => {
-  const imageUrl = getSingleImageUrl(req, req.file);
-  const response = await AboutUsService.addAboutUsImage({ image: imageUrl });
-  sendResponse(res, {
-    statusCode: 201,
-    success: true,
-    message: 'About Us section image added successfully',
-    data: response,
-  });
-});
-
-const deleteAboutSectionImage = catchAsync(async (req, res) => {
-  const response = await AboutUsService.deleteAboutUsImage(req.params.id);
+const deleteAboutSection = catchAsync(async (req, res) => {
+  const response = await AboutUsService.delete(req.params.id);
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'About Us section image deleted successfully',
+    message: 'About Us section deleted successfully',
     data: response,
   });
 });
 
 export const AboutUsController = {
-  crateAboutSection,
-  getAboutSection,
+  createAboutSection,
+  getAllAboutSections,
+  getAboutSectionById,
   updateAboutSection,
-  addAboutSectionImage,
-  deleteAboutSectionImage,
+  deleteAboutSection,
 };
