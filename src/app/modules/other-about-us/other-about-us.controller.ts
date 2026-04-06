@@ -5,15 +5,15 @@ import { OtherAboutUsService } from './other-about-us.service';
 import { getSingleImageUrl } from '../../utils/getImageUrl';
 
 const createOtherAboutUs = catchAsync(async (req, res) => {
-  const imageUrl = getSingleImageUrl(req, req.file);
+  const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
   const response = await OtherAboutUsService.create({
     ...req.body,
-    image: imageUrl,
+    image,
   });
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: 'Other About Us created successfully',
+    message: response && response.id ? 'Other About Us created/updated successfully' : 'Other About Us created successfully',
     data: response,
   });
 });
@@ -40,10 +40,10 @@ const getOtherAboutUsById = catchAsync(async (req, res) => {
 
 const updateOtherAboutUs = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const imageUrl = getSingleImageUrl(req, req.file);
+  const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
   const response = await OtherAboutUsService.update(id, {
     ...req.body,
-    image: imageUrl || req.body.image,
+    image,
   });
   sendResponse(res, {
     statusCode: 200,
