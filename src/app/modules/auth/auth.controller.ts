@@ -21,14 +21,14 @@ const login = catchAsync(async (req, res) => {
 });
 
 const register = catchAsync(async (req, res) => {
-  const profilePhotoUrl = req.file
+  const profilePhoto = req.file
     ? getSingleImageUrl(req, req.file)
-    : undefined;
+    : req.body.profilePhoto;
 
-  if (profilePhotoUrl) {
-    req.body.profilePhoto = profilePhotoUrl;
-  }
-  const response = await AuthServices.registerIntoDB(req.body);
+  const response = await AuthServices.registerIntoDB({
+    ...req.body,
+    profilePhoto,
+  });
 
   sendResponse(res, {
     statusCode: 201,
@@ -100,17 +100,16 @@ const getLoggedAdminDetails = catchAsync(async (req, res) => {
 });
 
 const updateProfile = catchAsync(async (req, res) => {
-  const profilePhotoUrl = req.file
+  const profilePhoto = req.file
     ? getSingleImageUrl(req, req.file)
-    : undefined;
-
-  if (profilePhotoUrl) {
-    req.body.profilePhoto = profilePhotoUrl;
-  }
+    : req.body.profilePhoto;
 
   const response = await AuthServices.updateAdminProfileIntoDB(
     req.user,
-    req.body,
+    {
+      ...req.body,
+      profilePhoto,
+    }
   );
 
   sendResponse(res, {
