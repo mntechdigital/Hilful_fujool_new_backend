@@ -1,16 +1,11 @@
 import catchAsync from '../../utils/catchAsync';
-import { getMultipleImageUrls } from '../../utils/getImageUrl';
+// import { getMultipleImageUrls } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { AboutUsService } from './about-us.service';
 
 const createAboutSection = catchAsync(async (req, res) => {
-  let images = req.body.images;
-  if (req.files) {
-    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
-    if (imageFiles.length > 0) {
-      images = getMultipleImageUrls(req, imageFiles);
-    }
-  }
+  const images = req.body.images;
+ 
 
   const response = await AboutUsService.create({
     ...req.body,
@@ -47,13 +42,8 @@ const getAboutSectionById = catchAsync(async (req, res) => {
 });
 
 const updateAboutSection = catchAsync(async (req, res) => {
-  let images = req.body.images;
-  if (req.files) {
-    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
-    if (imageFiles.length > 0) {
-      images = getMultipleImageUrls(req, imageFiles);
-    }
-  }
+  const images = req.body.images;
+  
 
   const response = await AboutUsService.update(
     req.params.id,

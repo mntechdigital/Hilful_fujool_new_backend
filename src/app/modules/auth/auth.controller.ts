@@ -1,5 +1,5 @@
 import catchAsync from '../../utils/catchAsync';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
 
@@ -21,9 +21,10 @@ const login = catchAsync(async (req, res) => {
 });
 
 const register = catchAsync(async (req, res) => {
-  const profilePhoto = req.file
-    ? getSingleImageUrl(req, req.file)
-    : req.body.profilePhoto;
+  // const profilePhoto = req.file
+  //   ? getSingleImageUrl(req, req.file)
+  //   : req.body.profilePhoto;
+  const profilePhoto = req.body.profilePhoto;
 
   const response = await AuthServices.registerIntoDB({
     ...req.body,
@@ -100,9 +101,10 @@ const getLoggedAdminDetails = catchAsync(async (req, res) => {
 });
 
 const updateProfile = catchAsync(async (req, res) => {
-  const profilePhoto = req.file
-    ? getSingleImageUrl(req, req.file)
-    : req.body.profilePhoto;
+  // const profilePhoto = req.file
+  //   ? getSingleImageUrl(req, req.file)
+  //   : req.body.profilePhoto;
+    const profilePhoto = req.body.profilePhoto;
 
   const response = await AuthServices.updateAdminProfileIntoDB(
     req.user,

@@ -1,5 +1,5 @@
 import catchAsync from '../../utils/catchAsync';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { FivePillarService } from './fivepillar.service';
 
@@ -36,7 +36,7 @@ const getFivePillarById = catchAsync(async (req, res) => {
 
 
 const updateFivePillar = catchAsync(async (req, res) => {
-	const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+	const image = req.body.image;
 	const response = await FivePillarService.update(req.params.id, { ...req.body, image: image });
 	sendResponse(res, {
 		statusCode: 200,

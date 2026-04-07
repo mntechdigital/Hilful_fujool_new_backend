@@ -3,11 +3,11 @@ import { ContactUsService } from './contact-us.service';
 import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 
 export class ContactUsController {
   static createContactUs = catchAsync(async (req: Request, res: Response) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+    const image = req.body.image;
     const contactUs = await ContactUsService.create({
       ...req.body,
       image,
@@ -41,7 +41,7 @@ export class ContactUsController {
   });
 
   static updateContactUs = catchAsync(async (req: Request, res: Response) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+    const image = req.body.image;
     const contactUs = await ContactUsService.update(req.params.id, {
       ...req.body,
       image,
