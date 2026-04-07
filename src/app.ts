@@ -50,8 +50,8 @@ app.use(globalErrorHandler);
 app.use(notFoundErrorHandler);
 
 // Running the server
-app.listen(config.port, () => {
+app.listen(5000, () => {
   // Seed the admin role if it doesn't exist
   seedRoleAdmin();
-  console.log(`Server is running on port ${config.port}`);
+  console.log(`Server is running on port 5000`);
 });
