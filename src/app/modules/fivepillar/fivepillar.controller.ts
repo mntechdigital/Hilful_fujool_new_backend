@@ -4,11 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import { FivePillarService } from './fivepillar.service';
 
 const createFivePillar = catchAsync(async (req, res) => {
-	const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-	const response = await FivePillarService.create({
-		...req.body,
-		image,
-	});
+	const response = await FivePillarService.create(req.body);
 	sendResponse(res, {
 		statusCode: 201,
 		success: true,
@@ -40,11 +36,8 @@ const getFivePillarById = catchAsync(async (req, res) => {
 
 
 const updateFivePillar = catchAsync(async (req, res) => {
-	const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-	const response = await FivePillarService.update(req.params.id, {
-		...req.body,
-		image,
-	});
+	const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+	const response = await FivePillarService.update(req.params.id, { ...req.body, image: image });
 	sendResponse(res, {
 		statusCode: 200,
 		success: true,

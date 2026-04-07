@@ -4,8 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import { GalleryService } from './gallery.service';
 
 const createGallery = catchAsync(async (req, res) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-    const response = await GalleryService.create({ ...req.body, image: image });
+    const response = await GalleryService.create(req.body);
     sendResponse(res, {
         statusCode: 201,
         success: true,

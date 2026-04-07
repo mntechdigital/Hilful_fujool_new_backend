@@ -1,16 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import prisma from '../../../db/db.config';
 import { builderQuery } from '../../builders/prismaBuilderQuery';
-import { deleteImageFile } from '../../utils/deleteFile';
 
 const create = async (payload: any) => {
-  if (!payload.image) {
-    throw new Error('Image is required');
+  let status = payload.status;
+  if (typeof status === 'string') {
+    status = status === 'true' || status === '1';
+  } else if (typeof status !== 'boolean') {
+    status = undefined;
   }
   return prisma.service.create({
     data: {
       ...payload,
-      status: payload.status !== undefined ? Boolean(payload.status) : undefined,
+      status: status,
       id: payload.id ? String(payload.id) : undefined,
     },
   });
@@ -51,33 +54,24 @@ const getById = async (id: string) => {
 
 
 const update = async (id: string, payload: any) => {
-  const existing = await prisma.service.findUniqueOrThrow({ where: { id } });
-  // If no new image is provided, keep the existing image
-  const image = payload.image || existing.image;
-  if (!image) {
-    throw new Error('Image is required');
+  const existing = await prisma.service.findUnique({ where: { id } });
+  if (!existing) {
+    throw new Error('Service not found');
   }
-  const updated = await prisma.service.update({
+  const imageValue = payload.image !== undefined ? payload.image : existing.image;
+  const data = {
+    ...payload,
+    image: imageValue,
+    status: payload.status !== undefined ? Boolean(payload.status) : undefined,
+  };
+  return prisma.service.update({
     where: { id },
-    data: {
-      ...payload,
-      image,
-      status: payload.status !== undefined ? Boolean(payload.status) : undefined,
-    },
+    data,
   });
-  if (payload.image && existing.image && existing.image !== payload.image) {
-    deleteImageFile(existing.image);
-  }
-  return updated;
 };
 
 const deleteService = async (id: string) => {
-  const existing = await prisma.service.findUniqueOrThrow({ where: { id } });
-  const deleted = await prisma.service.delete({ where: { id } });
-  if (existing.image) {
-    deleteImageFile(existing.image);
-  }
-  return deleted;
+  return prisma.service.delete({ where: { id } });
 };
 
 const updateStatus = async (id: string, status: boolean) => {

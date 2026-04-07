@@ -1,11 +1,9 @@
 import catchAsync from '../../utils/catchAsync';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { BlogService } from './blog.service';
 
 const createBlog = catchAsync(async (req, res) => {
-  const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-  const response = await BlogService.create({ ...req.body, image });
+  const response = await BlogService.create(req.body);
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -35,8 +33,7 @@ const getBlogById = catchAsync(async (req, res) => {
 });
 
 const updateBlog = catchAsync(async (req, res) => {
-  const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-  const response = await BlogService.update(req.params.id, { ...req.body, image });
+  const response = await BlogService.update(req.params.id, req.body);
   sendResponse(res, {
     statusCode: 200,
     success: true,

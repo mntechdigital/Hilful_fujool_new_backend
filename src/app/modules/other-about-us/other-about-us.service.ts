@@ -2,9 +2,22 @@
 import prisma from '../../../db/db.config';
 
 const create = async (payload: any) => {
-  if (!payload.image) {
-    throw new Error('Image is required');
+  const { image, images, ...rest } = payload;
+  delete rest.id;
+
+  // Parse images if frontend sends "images"
+  let parsedImage = image;
+  if (!parsedImage && images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.image || '';
+    }
   }
+
   // Check if a OthersAboutSection record already exists
   const existing = await prisma.othersAboutSection.findFirst();
   if (existing) {
@@ -12,16 +25,17 @@ const create = async (payload: any) => {
     return prisma.othersAboutSection.update({
       where: { id: existing.id },
       data: {
-        ...payload,
-        image: payload.image || existing.image,
+        ...rest,
+        image: parsedImage !== undefined ? parsedImage : existing.image,
       },
     });
   }
+  
   // If not exists, create new
   return prisma.othersAboutSection.create({
     data: {
-      ...payload,
-      id: payload.id ? String(payload.id) : undefined,
+      ...rest,
+      image: parsedImage,
     },
   });
 };
@@ -40,16 +54,28 @@ const getById = async (id: string) => {
 
 const update = async (id: string, payload: any) => {
   const existing = await prisma.othersAboutSection.findUniqueOrThrow({ where: { id } });
-  // If no new image is provided, keep the existing image
-  const image = payload.image || existing.image;
-  if (!image) {
-    throw new Error('Image is required');
+  
+  const { image, images, ...rest } = payload;
+  delete rest.id;
+
+  let parsedImage = image !== undefined ? image : existing.image;
+
+  if (images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.image || '';
+    }
   }
+
   return prisma.othersAboutSection.update({
     where: { id },
     data: {
-      ...payload,
-      image,
+      ...rest,
+      image: parsedImage,
     },
   });
 };

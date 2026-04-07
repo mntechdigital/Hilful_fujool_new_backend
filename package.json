@@ -4,8 +4,10 @@
   "description": "Wow",
   "main": "./dist/app.js",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start:prod": "node ./dist/app.js",
+    "start": "npm run build && node dist/app.js",
+    "postinstall": "prisma generate",
     "start:dev": "ts-node-dev --respawn --transpile-only ./src/app.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

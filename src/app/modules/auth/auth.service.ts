@@ -1,4 +1,5 @@
-import { AdminUser, AdminUserStatus } from '@prisma/client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AdminUserStatus } from '@prisma/client';
 import prisma from '../../../db/db.config';
 import bcrypt from 'bcryptjs';
 import { TLogin } from '../../types/auth.type';
@@ -10,11 +11,25 @@ import { sendEmail } from '../../utils/sendEmail';
 import { builderQuery } from '../../builders/prismaBuilderQuery';
 import { deleteImageFile } from '../../utils/deleteFile';
 
-const registerIntoDB = async (payload: AdminUser) => {
-  const hashedPassword = await bcrypt.hash(payload.password as string, 10);
+const registerIntoDB = async (payload: any) => {
+  const { profilePhoto, images, password, ...rest } = payload;
+  
+  let parsedImage = profilePhoto;
+  if (!parsedImage && images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.profilePhoto || img.image || '';
+    }
+  }
+
+  const hashedPassword = await bcrypt.hash(password as string, 10);
 
   const response = await prisma.adminUser.create({
-    data: { ...payload, password: hashedPassword },
+    data: { ...rest, profilePhoto: parsedImage, password: hashedPassword },
   });
 
   return response;
@@ -235,7 +250,7 @@ const getLoggedAdminDetailsFromDB = async (user: JwtPayload) => {
 
 const updateAdminProfileIntoDB = async (
   loggedU: JwtPayload,
-  payload: Partial<AdminUser>,
+  payload: any,
 ) => {
   const existingAdmin = await prisma.adminUser.findUnique({
     where: {
@@ -247,11 +262,29 @@ const updateAdminProfileIntoDB = async (
     throw new AppError(404, 'Admin user not found');
   }
 
+  const { profilePhoto, images, ...rest } = payload;
+  
+  let parsedImage = profilePhoto !== undefined ? profilePhoto : existingAdmin.profilePhoto;
+
+  if (images !== undefined) {
+    let rawImages = images;
+    if (typeof rawImages === 'string') {
+      try { rawImages = JSON.parse(rawImages); } catch { rawImages = [rawImages]; }
+    }
+    if (Array.isArray(rawImages) && rawImages.length > 0) {
+      const img = rawImages[0];
+      parsedImage = typeof img === 'string' ? img : img.profilePhoto || img.image || '';
+    }
+  }
+
   const response = await prisma.adminUser.update({
     where: {
       id: loggedU.id,
     },
-    data: payload,
+    data: {
+      ...rest,
+      profilePhoto: parsedImage,
+    },
   });
 
   return response;

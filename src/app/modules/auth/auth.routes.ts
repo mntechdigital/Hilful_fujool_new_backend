@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { featureNames } from '../../constant/seedRoleData';
 import auth from '../../middlewares/authorization';
-import { imageUpload, uploadImages } from '../../middlewares/multer';
 import validation from '../../middlewares/validation';
 import { AuthController } from './auth.controller';
 import { authValidations } from './auth.validation';
@@ -17,8 +16,6 @@ router.post(
 router.post(
   '/register',
   auth([featureNames.profile]),
-  imageUpload.single('profilePhoto'),
-  uploadImages,
   validation(authValidations.registerValidation),
   AuthController.register,
 );
@@ -47,8 +44,6 @@ router.get('/me', auth([]), AuthController.getLoggedAdminDetails);
 router.put(
   '/update-profile',
   auth([featureNames.profile]),
-  imageUpload.single('profilePhoto'),
-  uploadImages,
   AuthController.updateProfile,
 );
 

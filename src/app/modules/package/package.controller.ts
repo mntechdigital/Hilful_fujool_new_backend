@@ -1,26 +1,18 @@
-import AppError from '../../errors/AppError';
 import catchAsync from '../../utils/catchAsync';
-import { getMultipleImageUrls, getSingleImageUrl } from '../../utils/getImageUrl';
+import { getMultipleImageUrls } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { PackageService } from './package.service';
 
 const createPackage = catchAsync(async (req, res) => {
-    const files = req.files;
-
-    if (!files) {
-        throw new AppError(404, 'Please upload images');
+    let images = req.body.images;
+    if (req.files) {
+        const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+        if (imageFiles.length > 0) {
+            images = getMultipleImageUrls(req, imageFiles);
+        }
     }
-
-    const imageFiles = Array.isArray(files) ? files : Object.values(files).flat();
-    const imageUrls = getMultipleImageUrls(req, imageFiles);
-
-    const packageImages = imageUrls.map((image) => ({
-        image,
-    }));
-    const response = await PackageService.create({
-        ...req.body,
-        packageImages
-    });
+    
+    const response = await PackageService.create({ ...req.body, images });
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -50,42 +42,15 @@ const getPackageById = catchAsync(async (req, res) => {
 });
 
 const updatePackage = catchAsync(async (req, res) => {
-    const files = req.files;
-    const existingImages = req.body.existingImages;
-    
-    // Parse data if it's sent as JSON string
-    const packageData = req.body.data ? JSON.parse(req.body.data) : req.body;
-    
-    // Handle new image uploads
-    let newImageUrls: string[] = [];
-    if (Array.isArray(files) && files.length > 0) {
-        const imageFiles = files;
-        newImageUrls = getMultipleImageUrls(req, imageFiles);
-    } else if (files && !Array.isArray(files)) {
-        const imageFiles = Object.values(files).flat();
+    let images = req.body.images;
+    if (req.files) {
+        const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
         if (imageFiles.length > 0) {
-            newImageUrls = getMultipleImageUrls(req, imageFiles);
+            images = getMultipleImageUrls(req, imageFiles);
         }
     }
-    
-    // Parse existing images if sent as JSON string
-    let existingImageUrls: string[] = [];
-    if (existingImages) {
-        existingImageUrls = typeof existingImages === 'string' 
-            ? JSON.parse(existingImages) 
-            : Array.isArray(existingImages) 
-            ? existingImages 
-            : [existingImages];
-    }
-    
-    // Update package with images
-    const response = await PackageService.update(
-        req.params.id, 
-        packageData, 
-        existingImageUrls, 
-        newImageUrls
-    );
-    
+
+    const response = await PackageService.update(req.params.id, { ...req.body, images });
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -105,10 +70,11 @@ const deletePackage = catchAsync(async (req, res) => {
 });
 
 const addPackageImage = catchAsync(async (req, res) => {
-  const imageUrl = getSingleImageUrl(req, req.file);
+  const imageUrl = req.body.image;
 
   const response = await PackageService.packageImageCreate({
     image: imageUrl,
+    packageId: req.body.packageId
   });
 
   sendResponse(res, {
@@ -129,7 +95,6 @@ const deletePackageImage = catchAsync(async (req, res) => {
     data: response,
   });
 });
-
 
 const updatePackageStatus = catchAsync(async (req, res) => {
   const { id } = req.params;

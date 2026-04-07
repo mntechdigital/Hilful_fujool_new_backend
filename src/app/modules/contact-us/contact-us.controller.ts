@@ -7,7 +7,7 @@ import { getSingleImageUrl } from '../../utils/getImageUrl';
 
 export class ContactUsController {
   static createContactUs = catchAsync(async (req: Request, res: Response) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
+    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
     const contactUs = await ContactUsService.create({
       ...req.body,
       image,
@@ -21,7 +21,7 @@ export class ContactUsController {
   });
 
   static getAllContactUs = catchAsync(async (req: Request, res: Response) => {
-    const contactUsList = await ContactUsService.getAll(req.query);
+    const contactUsList = await ContactUsService.getAll();
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -41,7 +41,7 @@ export class ContactUsController {
   });
 
   static updateContactUs = catchAsync(async (req: Request, res: Response) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
+    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
     const contactUs = await ContactUsService.update(req.params.id, {
       ...req.body,
       image,

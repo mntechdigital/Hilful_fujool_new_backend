@@ -5,8 +5,7 @@ import sendResponse from '../../utils/sendResponse';
 import { ReviewService } from './review.service';
 
 const createReview = catchAsync(async (req, res) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
-    const response = await ReviewService.create({ ...req.body, image });
+    const response = await ReviewService.create(req.body);
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -36,7 +35,7 @@ const getReviewById = catchAsync(async (req, res) => {
 });
 
 const updateReview = catchAsync(async (req, res) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
+    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
     const response = await ReviewService.update(req.params.id, { ...req.body, image });
     sendResponse(res, {
         statusCode: 200,

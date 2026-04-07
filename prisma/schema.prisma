@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -42,7 +42,7 @@ model AdminUser {
   fullName     String
   email        String          @unique
   password     String
-  profilePhoto String?         @db.LongText
+  profilePhoto String?         @db.Text
   status       AdminUserStatus @default(ACTIVE)
   roleId       String
   role         Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -57,7 +57,7 @@ enum Status {
 
 model FivePillar {
   id          String   @id @default(uuid())
-  image       String
+  image       String?  @db.Text
   title       String
   description String   @db.Text
   order       Int
@@ -84,7 +84,7 @@ model AboutUs {
 
 model AboutUsImages {
   id        String   @id @default(uuid())
-  image     String
+  image     String?  @db.Text
   aboutUsId String
   aboutUs   AboutUs  @relation(fields: [aboutUsId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -97,7 +97,7 @@ model Blog {
   title            String
   shortDescription String   @db.Text
   description      String   @db.Text
-  image            String
+  image            String?  @db.Text
   status           Boolean
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -125,14 +125,14 @@ model ContactUs {
   facebookUrl     String
   instagramUrl    String
   youtubeUrl      String
-  image           String
+  image           String?  @db.Text
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
 
 model Gallery {
   id        String   @id @default(uuid())
-  image     String
+  image     String?  @db.Text
   status    Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -140,7 +140,7 @@ model Gallery {
 
 model HeroImages {
   id            String      @id @default(uuid())
-  image         String      @default("")
+  image         String?     @db.Text
   heroSectionId String
   heroSection   HeroSection @relation(fields: [heroSectionId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())
@@ -148,11 +148,11 @@ model HeroImages {
 }
 
 model HeroSection {
-  id          String  @id @default(uuid())
-  subtitle    String  @db.Text
-  title       String  @db.Text
-  description String? @db.Text
-  youtubeUrl  String
+  id           String  @id @default(uuid())
+  subtitle     String  @db.Text
+  title        String  @db.Text
+  description  String? @db.Text
+  youtubeUrl   String
   packageTitle String?
   serviceTitle String?
 
@@ -168,7 +168,7 @@ model OthersAboutSection {
   experienceYears  String
   trustedReviews   String
   servicesProvided String
-  image            String
+  image            String?  @db.Text
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -191,7 +191,7 @@ model Package {
 
 model PackageImage {
   id        String   @id @default(uuid())
-  image     String
+  image     String?  @db.Text
   packageId String
   package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -204,7 +204,7 @@ model Review {
   designation String
   rating      Int
   description String   @db.Text
-  image       String
+  image       String?  @db.Text
   status      Boolean
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -215,7 +215,7 @@ model Service {
   title            String
   shortDescription String   @db.Text
   description      String   @db.Text
-  image            String
+  image            String?  @db.Text
   status           Boolean
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

@@ -4,16 +4,13 @@ import { featureNames } from '../../constant/seedRoleData';
 import validation from '../../middlewares/validation';
 import { ServiceController } from './service.controller';
 import { ServiceValidation } from './service.validation';
-import { imageUpload, uploadImages } from '../../middlewares/multer';
 
 const router = Router();
 
 router.post(
   '/',
   auth([featureNames.services]),
-  imageUpload.single('image'),
   validation(ServiceValidation.createServiceValidation),
-  uploadImages,
   ServiceController.createService,
 );
 
@@ -24,9 +21,7 @@ router.get('/:id', ServiceController.getServiceById);
 router.put(
   '/:id',
   auth([featureNames.services]),
-  imageUpload.single('image'),
   validation(ServiceValidation.updateServiceValidation),
-  uploadImages,
   ServiceController.updateService,
 );
 

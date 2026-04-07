@@ -1,7 +1,6 @@
 import express from 'express';
 import { featureNames } from '../../constant/seedRoleData';
 import auth from '../../middlewares/authorization';
-import { imageUpload, uploadImages } from '../../middlewares/multer';
 import { PackageController } from './package.controller';
 
 const router = express.Router();
@@ -9,8 +8,6 @@ const router = express.Router();
 router.post(
     '/',
     auth([featureNames.packages]),
-    imageUpload.array('images', 10),
-    uploadImages,
     PackageController.createPackage
 );
 router.get(
@@ -31,8 +28,6 @@ router.get(
 router.put(
     '/:id',
     auth([featureNames.packages]),
-    imageUpload.array('images', 10),
-    uploadImages,
     PackageController.updatePackage
 );
 router.delete(
@@ -44,8 +39,6 @@ router.delete(
 router.post(
     '/image',
     auth([featureNames.settings]),
-    imageUpload.single('image'),
-    uploadImages,
     PackageController.addPackageImage,
 );
 
