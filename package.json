@@ -4,8 +4,9 @@
   "description": "Wow",
   "main": "./dist/app.js",
   "scripts": {
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && prisma migrate deploy && tsc",
     "start:prod": "node ./dist/app.js",
+    
     "start": "npm run build && node dist/app.js",
     "postinstall": "prisma generate",
     "start:dev": "ts-node-dev --respawn --transpile-only ./src/app.ts",
