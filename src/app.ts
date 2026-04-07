@@ -55,3 +55,13 @@ app.listen(5000, () => {
   seedRoleAdmin();
   console.log(`Server is running on port 5000`);
 });
+
+app.listen(5000, async () => {
+    try {
+      seedRoleAdmin();
+      console.log(`Server is running on port 5000`);
+    } catch (error) {
+      console.error('Failed to seed data:', error);
+    }
+    console.log(`Server is running on port ${5000}`);
+  });

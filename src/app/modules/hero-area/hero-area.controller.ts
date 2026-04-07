@@ -2,16 +2,16 @@
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { HeroAreaService } from './hero-area.service';
-import { getMultipleImageUrls } from '../../utils/getImageUrl';
+// import { getMultipleImageUrls } from '../../utils/getImageUrl';
 
 const createHeroSection = catchAsync(async (req, res) => {
-  let images = req.body.images;
-  if (req.files) {
-    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
-    if (imageFiles.length > 0) {
-      images = getMultipleImageUrls(req, imageFiles);
-    }
-  }
+  const images = req.body.images;
+  // if (req.files) {
+  //   const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+  //   if (imageFiles.length > 0) {
+  //     images = getMultipleImageUrls(req, imageFiles);
+  //   }
+  // }
 
   const response = await HeroAreaService.create({
     ...req.body,
@@ -46,13 +46,8 @@ const getHeroSectionById = catchAsync(async (req, res) => {
 });
 
 const updateHeroSection = catchAsync(async (req, res) => {
-  let images = req.body.images;
-  if (req.files) {
-    const imageFiles = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
-    if (imageFiles.length > 0) {
-      images = getMultipleImageUrls(req, imageFiles);
-    }
-  }
+  const images = req.body.images;
+  
 
   const response = await HeroAreaService.update(
     req.params.id,

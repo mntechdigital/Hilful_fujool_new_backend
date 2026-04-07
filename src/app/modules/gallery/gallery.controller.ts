@@ -1,5 +1,5 @@
 import catchAsync from '../../utils/catchAsync';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 import sendResponse from '../../utils/sendResponse';
 import { GalleryService } from './gallery.service';
 
@@ -34,7 +34,7 @@ const getGalleryById = catchAsync(async (req, res) => {
 });
 
 const updateGallery = catchAsync(async (req, res) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : undefined;
+    const image = req.body.image;
     const response = await GalleryService.update(req.params.id, { ...req.body, image: image });
     sendResponse(res, {
         statusCode: 200,

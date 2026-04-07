@@ -2,10 +2,10 @@
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { OtherAboutUsService } from './other-about-us.service';
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 
 const createOtherAboutUs = catchAsync(async (req, res) => {
-  const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+  const image = req.body.image;
   const response = await OtherAboutUsService.create({
     ...req.body,
     image,
@@ -40,7 +40,7 @@ const getOtherAboutUsById = catchAsync(async (req, res) => {
 
 const updateOtherAboutUs = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+  const image = req.body.image;
   const response = await OtherAboutUsService.update(id, {
     ...req.body,
     image,

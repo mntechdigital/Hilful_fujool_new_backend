@@ -1,5 +1,5 @@
 
-import { getSingleImageUrl } from '../../utils/getImageUrl';
+// import { getSingleImageUrl } from '../../utils/getImageUrl';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { ReviewService } from './review.service';
@@ -35,7 +35,7 @@ const getReviewById = catchAsync(async (req, res) => {
 });
 
 const updateReview = catchAsync(async (req, res) => {
-    const image = req.file ? getSingleImageUrl(req, req.file) : req.body.image;
+    const image = req.body.image;
     const response = await ReviewService.update(req.params.id, { ...req.body, image });
     sendResponse(res, {
         statusCode: 200,
