@@ -6,7 +6,7 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "start:prod": "node ./dist/app.js",
-    "start": "npm run build && node dist/src/app.js",
+    "start": "npm run build && node dist/app.js",
     "postinstall": "prisma generate",
     "start:dev": "ts-node-dev --respawn --transpile-only ./src/app.ts",
     "lint": "eslint .",
