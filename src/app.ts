@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
-import config from './app/configs';
+// import config from './app/configs';
 import router from './app/routes';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import notFoundErrorHandler from './app/middlewares/notFoundErrorHandler';
@@ -27,10 +27,10 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 // Middleware to log requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`${req.method} ${req.url}`);
+//   next();
+// });
 
 // Home route
 app.get('/', (req, res) => {
@@ -49,12 +49,7 @@ app.use(globalErrorHandler);
 // 404 Not Found middleware
 app.use(notFoundErrorHandler);
 
-// Running the server
-app.listen(5000, () => {
-  // Seed the admin role if it doesn't exist
-  seedRoleAdmin();
-  console.log(`Server is running on port 5000`);
-});
+
 
 app.listen(5000, async () => {
     try {
