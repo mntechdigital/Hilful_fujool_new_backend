@@ -6,8 +6,7 @@
   "scripts": {
     "build": "prisma generate && prisma migrate deploy && tsc",
     "start:prod": "node ./dist/app.js",
-    
-    "start": "npm run build && node dist/app.js",
+    "start": "npm run build && node ./dist/app.js",
     "postinstall": "prisma generate",
     "start:dev": "ts-node-dev --respawn --transpile-only ./src/app.ts",
     "lint": "eslint .",
@@ -15,7 +14,7 @@
     "prettier": "prettier --ignore-path .gitignore --write \"./src/**/*.+(js|ts|json)\"",
     "prettier:fix": "prettier --write src"
   },
-  "author": "Sourave Halder",
+  "author": "common",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.5.0",
