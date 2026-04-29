@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express, { Application } from 'express';
 import cors from 'cors';
 // import config from './app/configs';
