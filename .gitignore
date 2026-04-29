@@ -3,4 +3,3 @@ node_modules
 dist
 prisma/migrations
 public
-.vercel

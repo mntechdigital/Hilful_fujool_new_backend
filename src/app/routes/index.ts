@@ -11,6 +11,7 @@ import { ServiceRoutes } from '../modules/service/service.routes';
 
 import { GalleryRoutes } from '../modules/gallery/gallery.routes';
 import { ReviewRoutes } from '../modules/review/review.routes';
+import { VideoGalleryRoutes } from '../modules/video-gallery/video-gallery.routes';
 
 import { PackageRoutes } from '../modules/package/package.routes';
 import { ContactUsRoutes } from '../modules/contact-us/contact-us.routes';
@@ -79,7 +80,11 @@ const moduleRoutes: TModuleRoute[] = [
   {
     path: '/hero-section',
     route: HeroAreaRoutes,
-  }
+  },
+  {
+    path: '/video-gallery',
+    route: VideoGalleryRoutes,
+  },
 
 ];
 

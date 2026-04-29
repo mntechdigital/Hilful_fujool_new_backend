@@ -1,4 +1,4 @@
-# Sourave Halder Template
+# Rashed Uzzaman Reshad Template
 
 # Express.js backend Startup template
 
@@ -144,4 +144,4 @@ If you find this project helpful, feel free to connect with me:
 ## Support This Project
 If you like this project, consider giving it a ⭐ on GitHub! Your support helps me create more open-source tools and templates for the developer community.
 
-Happy coding and enjoy! 🚀
+Happy coding and enjoy all the day! 🚀
