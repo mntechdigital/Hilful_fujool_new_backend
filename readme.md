@@ -142,6 +142,6 @@ If you find this project helpful, feel free to connect with me:
 - Portfolio: [Rashed uzzaman reshad](https://reshadportfolio.vercel.app/)
 
 ## Support This Project
-If you like this project, consider giving it a ⭐ on GitHub! Your support helps me create more open-source tools and templates for the developer community.
+If you like this project, consider giving it a ⭐ on GitHub! Your support helps me create more open-source tools and templates for the developer community.new feature add
 
 Happy coding and enjoy all the day! 🚀
