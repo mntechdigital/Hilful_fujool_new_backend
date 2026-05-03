@@ -222,7 +222,7 @@ model Service {
 }
 
 
-model videoGallery {
+model VideoGallery {
   id        String   @id @default(uuid())
   title     String?   @db.Text
   videoUrl  String
